@@ -18,6 +18,20 @@ module.exports = function(defaults) {
   // modules that you would like to import into your application
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
-
+  app.import('node_modules/lolex/lolex.js', {
+    using: [
+      { transformation: 'amd', as: 'lolex' }
+    ],
+    type: 'test'
+  });
+  /*
+    app.import('node_modules/lolex/lolex.js', {
+    using: [
+      { transformation: 'amd', as: 'lolex' },
+      { transformation: 'fastbootShim' }
+    ],
+    type: 'test'
+  });
+*/
   return app.toTree();
 };
