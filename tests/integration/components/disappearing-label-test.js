@@ -69,7 +69,7 @@ module('Integration | Component | disappearing label', function(hooks) {
 
     this.clock.tick(2500);
 
-    assert.ok(labelIsVisible(), 'Message is still visible after the timeout threshhold when the user is hovered');
+    assert.ok(labelIsVisible(), 'Message is still visible after the timeout threshold when the user is hovered');
 
     triggerEvent(find('[data-test-disappearing-label]'), 'mouseout');
     await finishRender();
