@@ -1,32 +1,45 @@
 import { setupRenderingTest } from 'ember-qunit';
-import { find, render, triggerEvent } from '@ember/test-helpers';
+import { find, render, triggerEvent, waitUntil, getSettledState } from '@ember/test-helpers';
 import { module, test } from 'qunit';
-import { Promise } from 'rsvp';
 import lolex from 'lolex';
 import hbs from 'htmlbars-inline-precompile';
-// https://github.com/emberjs/ember-test-helpers/pull/317/files
 
-const nextTick = setTimeout;
+/**
+ * Helper function that checks to make sure all state has settled EXCEPT
+ * any timers pending in the run loop.
+ * @method finishRender
+ * @private
+ * @returns {Promise}
+ */
 function finishRender() {
-  return new Promise(resolve => {
-    nextTick(resolve);
+  return waitUntil(() => {
+    let { hasRunLoop, hasPendingRequests, hasPendingWaiters } = getSettledState();
+    if (hasRunLoop || hasPendingRequests || hasPendingWaiters) {
+      return false;
+    }
+    return true;
   });
 }
 
-function labelIsHidden() {
-  return find('[data-test-disappearing-label]').style.display === 'none';
+/**
+ * Helper function to check if the label component is current visible (true) or hidden (false)
+ * @method labelIsVisible
+ * @private
+ * @returns {Boolean}
+ */
+function labelIsVisible() {
+  return find('[data-test-disappearing-label]').style.display !== 'none';
 }
 
 module('Integration | Component | disappearing label', function(hooks) {
   setupRenderingTest(hooks);
 
   hooks.beforeEach(function() {
-    this.clock = lolex.install();
+    this.clock = lolex.install();// { shouldAdvanceTime: true }); (can't override "Date")
     this.timeout = 2000;
   });
 
   hooks.afterEach(function() {
-    this.clock.tick(this.timeout + 1);
     this.clock.uninstall();
   });
 
@@ -39,33 +52,32 @@ module('Integration | Component | disappearing label', function(hooks) {
   test('it shows the notification for the configured period of time', async function(assert) {
     render(hbs`{{disappearing-label timeout=timeout showMessage=true}}`);
     await finishRender();
-    assert.notOk(labelIsHidden(), 'Message is shown when element is added');
+    assert.ok(labelIsVisible(), 'Message is shown when element is added');
 
     this.clock.tick(3000);
-    assert.ok(labelIsHidden(), 'The text is automatically hidden after timeout value.');
+    assert.notOk(labelIsVisible(), 'The text is automatically hidden after timeout value.');
   });
 
   test('it resets the timeout for hiding message upon hover', async function(assert) {
     render(hbs`{{disappearing-label timeout=timeout showMessage=true}}`);
     await finishRender();
-    assert.notOk(labelIsHidden(), 'Message is shown when element is added');
+    assert.ok(labelIsVisible(), 'Message is shown when element is added');
 
     this.clock.tick(1000);
 
-    triggerEvent(find('[data-test-disappearing-label]'), 'mouseover');
-    await finishRender();
+    await triggerEvent(find('[data-test-disappearing-label]'), 'mouseover');
 
     this.clock.tick(2500);
 
-    assert.notOk(labelIsHidden(), 'Message is still visible after the timeout threshhold when the user is hovered');
+    assert.ok(labelIsVisible(), 'Message is still visible after the timeout threshhold when the user is hovered');
 
     triggerEvent(find('[data-test-disappearing-label]'), 'mouseout');
     await finishRender();
 
     this.clock.tick(1000);
-    assert.notOk(labelIsHidden(), 'Message is still visible after leaving the element during the timeout period.');
+    assert.ok(labelIsVisible(), 'Message is still visible after leaving the element during the timeout period.');
 
     this.clock.tick(2500);
-    assert.ok(labelIsHidden(), 'Message is automatically hidden after the timeout value from when the user left the element.');
+    assert.notOk(labelIsVisible(), 'Message is automatically hidden after the timeout value from when the user left the element.');
   });
 });
