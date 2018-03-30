@@ -43,7 +43,11 @@ export default Component.extend({
     },
     set(key, value) {
       if (value) {
-        this._showLabel();
+        if (get(this, 'isVisible')) {
+          return value;
+        }
+        set(this, 'isVisible', true);
+        this._scheduleHide();
       }
       return value;
     }
@@ -64,9 +68,8 @@ export default Component.extend({
    * @public
    */
   mouseEnter() {
-    this._clearTimer();
     if (get(this, 'isVisible')) {
-      this._showLabel(false);
+      this._clearTimer();
     }
   },
 
@@ -77,22 +80,6 @@ export default Component.extend({
    */
   mouseLeave() {
     if (get(this, 'isVisible')) {
-      this._scheduleHide();
-    }
-  },
-
-  /**
-   * Shows the disappearing label (and sets the timer to disappear if requested)
-   * @method _showLabel
-   * @private
-   * @param {Boolean} autoHide true to start the tier to disappear
-   */
-  _showLabel(autoHide = true) {
-    if (get(this, 'isVisible')) {
-      return;
-    }
-    set(this, 'isVisible', true);
-    if (autoHide) {
       this._scheduleHide();
     }
   },
