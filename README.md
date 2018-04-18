@@ -1,7 +1,7 @@
 # lolex-demo
 
-This README outlines the details of collaborating on this Ember application.
-A short introduction of this app could easily go here.
+This demo application serves as a demonstration of how to integrate Lolex timers into Ember tests.
+It is to accompany the blog post "Bending Time in Ember Tests" at https://dockyard.com/blog
 
 ## Prerequisites
 
