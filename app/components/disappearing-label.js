@@ -109,7 +109,7 @@ export default Component.extend({
         return;
       }
       set(this, 'isVisible', false);
-      set(this, '_currenTimer', null);
+      set(this, '_currentTimer', null);
     }, get(this, 'timeout'));
     set(this, '_currentTimer', timer);
   }
